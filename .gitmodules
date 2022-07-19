@@ -1,0 +1,6 @@
+[submodule "MrubyDecompiler"]
+	path = MrubyDecompiler
+	url = https://github.com/ArthurHeitmann/MrubyDecompiler.git
+[submodule "NierDocs"]
+	path = NierDocs
+	url = https://github.com/ArthurHeitmann/NierDocs.git
