@@ -1,4 +1,4 @@
-# Nier Autorebuild
+# Nier Auto Rebuild
 
 File watcher for XML and Ruby files.
 
