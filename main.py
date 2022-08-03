@@ -12,6 +12,8 @@ from MrubyDecompiler import compileFile
 from NierDocs.tools.pakScriptTools.xmlToYax import xmlToYax
 from NierDocs.tools.pakScriptTools.pakRepacker import repackPak
 
+from nier2blender2nier.exportDat import export_dat
+
 
 def backupFile(file: str):
     # copy the original file to <file>.bak the first time
@@ -61,10 +63,14 @@ class FileChangeHandler(FileSystemEventHandler):
             print(f"Compiling {event.src_path}")
             backupFile(mrbBinFile)
             compileFile(event.src_path, mrbBinFile)
+        
+        export_dat(sys.argv[1],sys.argv[2])
+
+        
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print("Usage: python main.py <directory>")
+        print("Usage: python main.py <directory> <out_file>")
         sys.exit(1)
     watchDir = sys.argv[1]
     handler = FileChangeHandler()
