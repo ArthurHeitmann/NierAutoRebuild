@@ -17,9 +17,9 @@ You need to have the "watchdog" library installed.
 Since this repo uses git submodules, you have to clone it with the `--recurse-submodules` option.  
 `git clone --recurse-submodules https://github.com/bbssamuray/NierAutoRebuildDat.git`
 
-To watch a folder:
+To watch a folder (`out_dat` is optional .dat export path):
 
-`python main.py <folder> <out_file>`
+`python main.py <folder> [<out_dat>]`
 
 ### Credit
 

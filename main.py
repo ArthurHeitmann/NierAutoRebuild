@@ -14,6 +14,8 @@ from NierDocs.tools.pakScriptTools.pakRepacker import repackPak
 
 from nier2blender2nier.exportDat import export_dat
 
+watchDir: str = None
+datFile: str = None
 
 def backupFile(file: str):
     # copy the original file to <file>.bak the first time
@@ -64,15 +66,17 @@ class FileChangeHandler(FileSystemEventHandler):
             backupFile(mrbBinFile)
             compileFile(event.src_path, mrbBinFile)
         
-        export_dat(sys.argv[1],sys.argv[2])
-
+        if datFile is not None:
+            export_dat(datFile)
         
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print("Usage: python main.py <directory> <out_file>")
+        print("Usage: python main.py <directory> [<out_dat>]")
         sys.exit(1)
     watchDir = sys.argv[1]
+    if len(sys.argv) > 2:
+        datFile = sys.argv[2]
     handler = FileChangeHandler()
     observer = Observer()
     observer.schedule(handler, watchDir, recursive=True)
