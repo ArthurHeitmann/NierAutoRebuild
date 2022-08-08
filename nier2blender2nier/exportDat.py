@@ -23,7 +23,6 @@ def export_dat(dat_dir, export_filepath):
 
     if hash_file_path == None:
         print('[!] DAT/DTT Error: hash_data.metadata not found.')
-        ShowMessageBox('hash_data.metadata not found.', 'DAT/DTT Export Error', 'ERROR') 
         return
 
     # Get files and their order
@@ -35,10 +34,9 @@ def export_dat(dat_dir, export_filepath):
         for i in range(fileCount):
             fileName = to_string(file_orderFile.read(fileNameSize))
             files.append(dat_dir + '/' + fileName)
-            print('[' + fileName + ']')
+            # print('[' + fileName + ']')
     else:
         print('[!] DAT/DTT Error: file_order.metadata not found.')
-        ShowMessageBox('file_order.metadata not found.', 'DAT/DTT Export Error', 'ERROR') 
         return
     
 
@@ -136,6 +134,5 @@ def export_dat(dat_dir, export_filepath):
 
     dat_file.close()
     
-    #print('DAT/DTT Export Complete. :>')
     print('DAT Export Complete. :)')
-
+    print()

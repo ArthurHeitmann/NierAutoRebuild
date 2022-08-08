@@ -17,24 +17,12 @@ You need to have the "watchdog" library installed.
 Since this repo uses git submodules, you have to clone it with the `--recurse-submodules` option.  
 `git clone --recurse-submodules https://github.com/bbssamuray/NierAutoRebuildDat.git`
 
-To watch a folder (`out_dat` is optional .dat export path):
+**To watch a folder:**  
 
 `python main.py <folder> [<out_dat>]`
 
-### Credit
+`<out_dat>` is an optional .dat file export path. If used, `<folder>` has to be a dat directory
 
-All the credit goes to:
+### Credits
 
-RaiderB
-
-https://github.com/ArthurHeitmann/NierAutoRebuild/
-
-
-WoefulWolf
-
-https://github.com/WoefulWolf/NieR2Blender2NieR/
-
-
-## Known issues
-
-If your IDE saves multiple files at the same time, this currently won't work. You have to save one file at a time.
+The dat exporter is from Woeful_Wolf's [Nier2Blender2Nier](https://github.com/WoefulWolf/NieR2Blender2NieR) addon.

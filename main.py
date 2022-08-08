@@ -1,9 +1,11 @@
+from ast import List
 import os
 import pathlib
 import sys
 import time
 import shutil
-from threading import Timer
+from threading import Lock, Timer
+from typing import Set
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -45,29 +47,55 @@ def debounce(wait):
 
 
 class FileChangeHandler(FileSystemEventHandler):
-    @debounce(0.1)
+    pendingFiles: Set[str]
+    mutex = Lock()
+
+    def __init__(self):
+        self.pendingFiles = set()
+
     def on_modified(self, event):
-        if event.src_path.endswith(".xml"):
-            yaxFile = event.src_path[:-4] + ".yax"
-            if not os.path.exists(yaxFile):
-                return
-            print(f"Converting {event.src_path} to yax")
-            xmlToYax(event.src_path, yaxFile)
-            dirName = os.path.dirname(event.src_path)
-            if dirName.endswith(".pak"):
-                pakFileName = pathlib.Path(dirName).parts[-1]
-                pakFile = str(pathlib.Path(dirName).parent.parent / pakFileName)
-                print(f"Repacking {pakFile}")
-                backupFile(pakFile)
-                repackPak(dirName)
-        elif event.src_path.endswith(".rb"):
-            mrbBinFile = event.src_path[:-3]
-            print(f"Compiling {event.src_path}")
-            backupFile(mrbBinFile)
-            compileFile(event.src_path, mrbBinFile)
-        
-        if datFile is not None:
-            export_dat(datFile)
+        if event.is_directory:
+            return
+        self.mutex.acquire()
+        self.pendingFiles.add(event.src_path)
+        self.mutex.release()
+        self.handlePendingFiles()
+    
+    @debounce(0.15)
+    def handlePendingFiles(self):
+        self.mutex.acquire()
+        hasDatChanged = False
+        changedPakDirs = set()
+        for file in self.pendingFiles:
+            fileName = os.path.basename(file)
+            if file.endswith(".xml"):
+                yaxFile = file[:-4] + ".yax"
+                if not os.path.exists(yaxFile):
+                    return
+                print(f"Converting {fileName} to yax")
+                xmlToYax(file, yaxFile)
+                dirName = os.path.dirname(file)
+                if dirName.endswith(".pak"):
+                    changedPakDirs.add(dirName)
+
+            elif file.endswith(".rb"):
+                mrbBinFile = file[:-3]
+                print(f"Compiling {fileName}")
+                backupFile(mrbBinFile)
+                compileFile(file, mrbBinFile)
+                hasDatChanged = True
+            
+        for dirName in changedPakDirs:
+            pakFileName = pathlib.Path(dirName).parts[-1]
+            pakFile = str(pathlib.Path(dirName).parent.parent / pakFileName)
+            print(f"Repacking {pakFile}")
+            backupFile(pakFile)
+            repackPak(dirName)
+            hasDatChanged = True
+        if datFile is not None and hasDatChanged:
+            export_dat(watchDir, datFile)
+        self.pendingFiles.clear()
+        self.mutex.release()
         
 
 if __name__ == '__main__':
