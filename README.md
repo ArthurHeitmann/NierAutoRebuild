@@ -15,7 +15,7 @@ Goal is saving the modder from filetype and tool hell.
 You need to have the "watchdog" library installed.
 
 Since this repo uses git submodules, you have to clone it with the `--recurse-submodules` option.  
-`git clone --recurse-submodules https://github.com/bbssamuray/NierAutoRebuildDat.git`
+`git clone --recurse-submodules https://github.com/ArthurHeitmann/NierAutoRebuild.git`
 
 **To watch a folder:**  
 
