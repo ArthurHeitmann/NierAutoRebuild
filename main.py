@@ -71,7 +71,7 @@ class FileChangeHandler(FileSystemEventHandler):
             if file.endswith(".xml"):
                 yaxFile = file[:-4] + ".yax"
                 if not os.path.exists(yaxFile):
-                    return
+                    continue
                 print(f"Converting {fileName} to yax")
                 xmlToYax(file, yaxFile)
                 dirName = os.path.dirname(file)
