@@ -8,7 +8,12 @@ For ruby scripts they will be recompiled.
 For XML files they will be converted to YAX and the PAK files repacked.   
 Dat file will be created by combining everything.   
 
-Goal is saving the modder from filetype and tool hell.
+**Additional Features for XML scripting:**  
+
+- checking for duplicate IDs
+- checking for invalid ID usages
+- checking if `<size>` is correct
+- checking if a hash matches the `str="..."`
 
 ### Usage
 

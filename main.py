@@ -1,4 +1,3 @@
-from ast import List
 import os
 import pathlib
 import sys
@@ -13,8 +12,9 @@ from watchdog.events import FileSystemEventHandler
 from MrubyDecompiler import compileFile
 from NierDocs.tools.pakScriptTools.xmlToYax import xmlToYax
 from NierDocs.tools.pakScriptTools.pakRepacker import repackPak
-
 from nier2blender2nier.exportDat import export_dat
+
+from pakWarningsChecker import checkWarningsOfPakFolder
 
 watchDir: str = None
 datFile: str = None
@@ -89,6 +89,7 @@ class FileChangeHandler(FileSystemEventHandler):
             pakFileName = pathlib.Path(dirName).parts[-1]
             pakFile = str(pathlib.Path(dirName).parent.parent / pakFileName)
             print(f"Repacking {pakFile}")
+            checkWarningsOfPakFolder(dirName)
             backupFile(pakFile)
             repackPak(dirName)
             hasDatChanged = True
@@ -99,10 +100,11 @@ class FileChangeHandler(FileSystemEventHandler):
         
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print("Usage: python main.py <directory> [<out_dat>]")
-        sys.exit(1)
-    watchDir = sys.argv[1]
+    # if len(sys.argv) < 2:
+    #     print("Usage: python main.py <directory> [<out_dat>]")
+    #     sys.exit(1)
+    # watchDir = sys.argv[1]
+    watchDir = "D:\delete\\mods\\na\\blender\\extracted\\data012.cpk_unpacked\\st5\\nier2blender_extracted\\r501.dat"
     if len(sys.argv) > 2:
         datFile = sys.argv[2]
     handler = FileChangeHandler()
