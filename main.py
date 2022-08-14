@@ -100,11 +100,10 @@ class FileChangeHandler(FileSystemEventHandler):
         
 
 if __name__ == '__main__':
-    # if len(sys.argv) < 2:
-    #     print("Usage: python main.py <directory> [<out_dat>]")
-    #     sys.exit(1)
-    # watchDir = sys.argv[1]
-    watchDir = "D:\delete\\mods\\na\\blender\\extracted\\data012.cpk_unpacked\\st5\\nier2blender_extracted\\r501.dat"
+    if len(sys.argv) < 2:
+        print("Usage: python main.py <directory> [<out_dat>]")
+        sys.exit(1)
+    watchDir = sys.argv[1]
     if len(sys.argv) > 2:
         datFile = sys.argv[2]
     handler = FileChangeHandler()
