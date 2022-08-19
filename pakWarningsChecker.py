@@ -25,6 +25,7 @@ def checkWarningsOfPakFolder(folder: str) -> None:
 	global currentFile
 	allIds: Dict[str, List[int]] = {}
 
+	xmlDocs: List[ET.Element] = []
 	for file in os.listdir(folder):
 		# is YAX XML
 		filePath = os.path.join(folder, file)
@@ -33,8 +34,11 @@ def checkWarningsOfPakFolder(folder: str) -> None:
 
 		currentFile = file
 		xmlDoc = ET.parse(filePath).getroot()
+		xmlDocs.append(xmlDoc)
 
 		collectIds(xmlDoc, allIds)
+	
+	for xmlDoc in xmlDocs:
 		verifyIdUsages(xmlDoc, allIds)
 		verifySizes(xmlDoc)
 		verifyHashes(xmlDoc)
@@ -45,9 +49,9 @@ def collectIds(xmlDoc: ET.Element, allIds: Dict[str, List[int]]) -> None:
 	def handleId(category: str, elem: ET.Element):
 		id = getId(elem)
 		if id < 0 or id > 0xFFFFFFFF:
-			printWarning(f"{category} (<{elem.tag}>) id 0x{id:08x} is out of range")
+			printWarning(f"{category} (<{elem.tag}>) id 0x{id:x} is out of range")
 		if category in allIds and id in allIds[category]:
-			printWarning(f"Duplicate {category} (<{elem.tag}>) id 0x{id:08x}")
+			printWarning(f"Duplicate {category} (<{elem.tag}>) id 0x{id:x}")
 		else:
 			if category not in allIds:
 				allIds[category] = []
@@ -88,10 +92,10 @@ def verifyIdUsages(xmlDoc: ET.Element, allIds: Dict[str, List[int]]) -> None:
 			continue
 		if codeId == actionHash:
 			if valueId not in allIds["actions"]:
-				printWarning(f"Action code 0x{codeId:08x} references unknown action 0x{valueId:08x}")
+				printWarning(f"Action code 0x{codeId:x} references unknown action 0x{valueId:x}")
 		elif codeId == entityHash:
 			if valueId not in allIds["entities"]:
-				printWarning(f"Entity code 0x{codeId:08x} references unknown entity 0x{valueId:08x}")
+				printWarning(f"Entity code 0x{codeId:x} references unknown entity 0x{valueId:x}")
 
 
 def verifySizes(xmlDoc: ET.Element) -> None:
@@ -121,4 +125,4 @@ def verifyHashes(xmlDoc: ET.Element) -> None:
 		if "str" in elem.attrib:
 			if crc32(elem.attrib["str"]) == int(elem.text, 16):
 				continue
-			printWarning(f"<{elem.tag}> hash mismatch ({elem.text} != crc32(\"{elem.attrib['str']}\")=0x{crc32(elem.text):08x})")
+			printWarning(f"<{elem.tag}> hash mismatch ({elem.text} != crc32(\"{elem.attrib['str']}\")=0x{crc32(elem.text):x})")
