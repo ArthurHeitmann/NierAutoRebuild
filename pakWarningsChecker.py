@@ -1,7 +1,8 @@
 import os
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import xml.etree.ElementTree as ET
 import zlib
+import json
 
 # UTILS
 
@@ -25,20 +26,24 @@ def checkWarningsOfPakFolder(folder: str) -> None:
 	global currentFile
 	allIds: Dict[str, List[int]] = {}
 
-	xmlDocs: List[ET.Element] = []
-	for file in os.listdir(folder):
-		# is YAX XML
-		filePath = os.path.join(folder, file)
-		if not (file.endswith(".xml") and os.path.exists(filePath.replace(".xml", ".yax"))):
-			continue
+	xmlDocs: Tuple[str, List[ET.Element]] = []
+	with open(os.path.join(folder, os.path.join(folder, "pakInfo.json")), "r") as f:
+		pakInfo = json.load(f)
+		for file in pakInfo["files"]:
+			xmlName = file["name"].replace(".yax", ".xml")
+			xmlFilePath = os.path.join(folder, xmlName)
+			if not os.path.isfile(xmlFilePath):
+				printWarning(f"{xmlName} is missing")
+				continue
 
-		currentFile = file
-		xmlDoc = ET.parse(filePath).getroot()
-		xmlDocs.append(xmlDoc)
+			currentFile = xmlName
+			xmlDoc = ET.parse(xmlFilePath).getroot()
+			xmlDocs.append((xmlName, xmlDoc))
 
-		collectIds(xmlDoc, allIds)
+			collectIds(xmlDoc, allIds)
 	
-	for xmlDoc in xmlDocs:
+	for file, xmlDoc in xmlDocs:
+		currentFile = file
 		verifyIdUsages(xmlDoc, allIds)
 		verifySizes(xmlDoc)
 		verifyHashes(xmlDoc)
@@ -60,6 +65,11 @@ def collectIds(xmlDoc: ET.Element, allIds: Dict[str, List[int]]) -> None:
 	# actions
 	for action in xmlDoc.findall("action"):
 		handleId("actions", action)
+
+	# groups (0.xml)
+	if currentFile == "0.xml":
+		for group in xmlDoc.findall("group"):
+			handleId("groups", group)
 	
 	# entities
 	for layouts in xmlDoc.findall(".//layouts"):
@@ -80,6 +90,13 @@ def collectIds(xmlDoc: ET.Element, allIds: Dict[str, List[int]]) -> None:
 def verifyIdUsages(xmlDoc: ET.Element, allIds: Dict[str, List[int]]) -> None:
 	actionHash = crc32("hap::Action")
 	entityHash = crc32("app::EntityLayout")
+
+	# file group id
+	fileGroup = xmlDoc.find("group")
+	if fileGroup is not None and fileGroup.text.startswith("0x"):
+		fileGroupId = int(fileGroup.text, 16)
+		if fileGroupId not in allIds["groups"]:
+			printWarning(f"Group id 0x{fileGroupId:x} references unknown group")
 
 	for elem in xmlDoc.iter():
 		code = elem.find("code")
@@ -125,4 +142,4 @@ def verifyHashes(xmlDoc: ET.Element) -> None:
 		if "str" in elem.attrib:
 			if crc32(elem.attrib["str"]) == int(elem.text, 16):
 				continue
-			printWarning(f"<{elem.tag}> hash mismatch ({elem.text} != crc32(\"{elem.attrib['str']}\")=0x{crc32(elem.text):x})")
+			printWarning(f"<{elem.tag}> hash mismatch ({elem.text} != crc32(\"{elem.attrib['str']}\")=0x{crc32(elem.attrib['str']):x})")

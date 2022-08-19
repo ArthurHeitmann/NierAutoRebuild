@@ -4,6 +4,7 @@ import sys
 import time
 import shutil
 from threading import Lock, Timer
+import traceback
 from typing import Set
 
 from watchdog.observers import Observer
@@ -18,6 +19,7 @@ from pakWarningsChecker import checkWarningsOfPakFolder
 
 watchDir: str = None
 datFile: str = None
+mutex = Lock()
 
 def backupFile(file: str):
     # copy the original file to <file>.bak the first time
@@ -35,7 +37,13 @@ def debounce(wait):
     def decorator(fn):
         def debounced(*args, **kwargs):
             def call_it():
-                fn(*args, **kwargs)
+                try:
+                    fn(*args, **kwargs)
+                except:
+                    print("Error in debounced function")
+                    traceback.print_exc()
+                    if mutex.locked():
+                        mutex.release()
             try:
                 debounced.t.cancel()
             except AttributeError:
@@ -48,7 +56,6 @@ def debounce(wait):
 
 class FileChangeHandler(FileSystemEventHandler):
     pendingFiles: Set[str]
-    mutex = Lock()
 
     def __init__(self):
         self.pendingFiles = set()
@@ -56,14 +63,14 @@ class FileChangeHandler(FileSystemEventHandler):
     def on_modified(self, event):
         if event.is_directory:
             return
-        self.mutex.acquire()
+        mutex.acquire()
         self.pendingFiles.add(event.src_path)
-        self.mutex.release()
+        mutex.release()
         self.handlePendingFiles()
     
     @debounce(0.15)
     def handlePendingFiles(self):
-        self.mutex.acquire()
+        mutex.acquire()
         hasDatChanged = False
         changedPakDirs = set()
         for file in self.pendingFiles:
@@ -77,6 +84,9 @@ class FileChangeHandler(FileSystemEventHandler):
                 dirName = os.path.dirname(file)
                 if dirName.endswith(".pak"):
                     changedPakDirs.add(dirName)
+
+            elif file.endswith("pakInfo.json"):
+                changedPakDirs.add(os.path.dirname(file))
 
             elif file.endswith(".rb"):
                 mrbBinFile = file[:-3]
@@ -96,7 +106,7 @@ class FileChangeHandler(FileSystemEventHandler):
         if datFile is not None and hasDatChanged:
             export_dat(watchDir, datFile)
         self.pendingFiles.clear()
-        self.mutex.release()
+        mutex.release()
         
 
 if __name__ == '__main__':
