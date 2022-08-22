@@ -1,3 +1,4 @@
+import json
 import os
 import pathlib
 import sys
@@ -76,9 +77,17 @@ class FileChangeHandler(FileSystemEventHandler):
         for file in self.pendingFiles:
             fileName = os.path.basename(file)
             if file.endswith(".xml"):
-                yaxFile = file[:-4] + ".yax"
-                if not os.path.exists(yaxFile):
+                # check if file is in pakInfo.json
+                infoPath = os.path.join(os.path.dirname(file), "pakInfo.json")
+                if not os.path.exists(infoPath):
                     continue
+                with open(infoPath, "r") as f:
+                    pakInfo = json.load(f)
+                yaxFile = file[:-4] + ".yax"
+                yaxFileName = os.path.basename(yaxFile)
+                if not any(yaxFileName in file["name"] for file in pakInfo["files"]):
+                    continue
+                # convert xml to yax
                 print(f"Converting {fileName} to yax")
                 xmlToYax(file, yaxFile)
                 dirName = os.path.dirname(file)

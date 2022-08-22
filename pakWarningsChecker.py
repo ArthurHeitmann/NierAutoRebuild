@@ -29,18 +29,18 @@ def checkWarningsOfPakFolder(folder: str) -> None:
 	xmlDocs: Tuple[str, List[ET.Element]] = []
 	with open(os.path.join(folder, os.path.join(folder, "pakInfo.json")), "r") as f:
 		pakInfo = json.load(f)
-		for file in pakInfo["files"]:
-			xmlName = file["name"].replace(".yax", ".xml")
-			xmlFilePath = os.path.join(folder, xmlName)
-			if not os.path.isfile(xmlFilePath):
-				printWarning(f"{xmlName} is missing")
-				continue
+	for file in pakInfo["files"]:
+		xmlName = file["name"].replace(".yax", ".xml")
+		xmlFilePath = os.path.join(folder, xmlName)
+		if not os.path.isfile(xmlFilePath):
+			printWarning(f"{xmlName} is missing")
+			continue
 
-			currentFile = xmlName
-			xmlDoc = ET.parse(xmlFilePath).getroot()
-			xmlDocs.append((xmlName, xmlDoc))
+		currentFile = xmlName
+		xmlDoc = ET.parse(xmlFilePath).getroot()
+		xmlDocs.append((xmlName, xmlDoc))
 
-			collectIds(xmlDoc, allIds)
+		collectIds(xmlDoc, allIds)
 	
 	for file, xmlDoc in xmlDocs:
 		currentFile = file
@@ -61,6 +61,11 @@ def collectIds(xmlDoc: ET.Element, allIds: Dict[str, List[int]]) -> None:
 			if category not in allIds:
 				allIds[category] = []
 			allIds[category].append(id)
+
+	# file ID
+	fileId = getId(xmlDoc)
+	if fileId != -1:
+		handleId("files", xmlDoc)
 
 	# actions
 	for action in xmlDoc.findall("action"):
