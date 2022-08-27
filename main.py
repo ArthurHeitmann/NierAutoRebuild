@@ -113,7 +113,9 @@ class FileChangeHandler(FileSystemEventHandler):
             repackPak(dirName)
             hasDatChanged = True
         if datFile is not None and hasDatChanged:
-            export_dat(watchDir, datFile)
+            # todo: Should probably check for file extensions
+            #Extensions bigger than 4 characters may mess things up
+            export_dat(datFile, [os.path.join(watchDir,file) for file in os.listdir(watchDir) if os.path.isfile(os.path.join(watchDir,file))] )
         self.pendingFiles.clear()
         mutex.release()
         
