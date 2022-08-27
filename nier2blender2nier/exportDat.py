@@ -5,7 +5,6 @@ import math
 import os
 
 from nier2blender2nier.ioUtils import write_string, write_Int32, write_buffer, read_int32
-#from util import *
 
 
 def to_string(bs, encoding = 'utf8'):
@@ -105,4 +104,4 @@ def export_dat(export_filepath, file_list):
         fileData.close()
 
     dat_file.close()
-    print('DAT/DTT Export Complete. :)')
+    print('DAT Export Complete. :)')

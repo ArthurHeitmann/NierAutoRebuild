@@ -15,6 +15,7 @@ from MrubyDecompiler import compileFile
 from NierDocs.tools.pakScriptTools.xmlToYax import xmlToYax
 from NierDocs.tools.pakScriptTools.pakRepacker import repackPak
 from nier2blender2nier.exportDat import export_dat
+from nier2blender2nier.util import importContentsFileFromFolder
 
 from pakWarningsChecker import checkWarningsOfPakFolder
 
@@ -115,7 +116,7 @@ class FileChangeHandler(FileSystemEventHandler):
         if datFile is not None and hasDatChanged:
             # todo: Should probably check for file extensions
             #Extensions bigger than 4 characters may mess things up
-            export_dat(datFile, [os.path.join(watchDir,file) for file in os.listdir(watchDir) if os.path.isfile(os.path.join(watchDir,file))] )
+            export_dat(datFile, importContentsFileFromFolder(watchDir))
         self.pendingFiles.clear()
         mutex.release()
         
