@@ -105,11 +105,11 @@ def verifyIdUsages(xmlDoc: ET.Element, allIds: Dict[str, List[int]]) -> None:
 
 	for elem in xmlDoc.iter():
 		code = elem.find("code")
-		value = elem.find("value")
-		if code is None or value is None:
+		id = elem.find("id")
+		if code is None or id is None:
 			continue
 		codeId = getId(elem, "code")
-		valueId = getId(elem, "value")
+		valueId = getId(elem, "id")
 		if valueId == 0 or valueId == -1:
 			continue
 		if codeId == actionHash:
