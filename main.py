@@ -17,7 +17,7 @@ from NierDocs.tools.pakScriptTools.pakRepacker import repackPak
 from nier2blender2nier.exportDat import export_dat
 from nier2blender2nier.util import importContentsFileFromFolder
 
-from pakWarningsChecker import checkWarningsOfPakFolder
+from pakWarningsChecker import checkWarningsInFolder
 
 watchDir: str = None
 datFile: str = None
@@ -109,10 +109,11 @@ class FileChangeHandler(FileSystemEventHandler):
             pakFileName = pathlib.Path(dirName).parts[-1]
             pakFile = str(pathlib.Path(dirName).parent.parent / pakFileName)
             print(f"Repacking {pakFile}")
-            checkWarningsOfPakFolder(dirName)
             backupFile(pakFile)
             repackPak(dirName)
             hasDatChanged = True
+        if len(changedPakDirs) > 0:
+            checkWarningsInFolder(watchDir)
         if datFile is not None and hasDatChanged:
             # todo: Should probably check for file extensions
             #Extensions bigger than 4 characters may mess things up
@@ -130,6 +131,7 @@ if __name__ == '__main__':
         datFile = sys.argv[2]
     handler = FileChangeHandler()
     observer = Observer()
+    checkWarningsInFolder(watchDir)
     observer.schedule(handler, watchDir, recursive=True)
     observer.start()
     print(f"Watching {watchDir}")

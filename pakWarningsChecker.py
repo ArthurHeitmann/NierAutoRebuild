@@ -22,22 +22,24 @@ def crc32(text: str) -> int:
 # MAIN
 
 currentFile: str = ""
-def checkWarningsOfPakFolder(folder: str) -> None:
+def checkWarningsInFolder(folder: str) -> None:
 	global currentFile
-	allIds: Dict[str, List[int]] = {}
+	allIds: Dict[str, List[int]] = {
+		"groups": [],
+		"actions": [],
+		"entities": [],
+		"script variable": [],
+	}
 
 	xmlDocs: Tuple[str, List[ET.Element]] = []
-	with open(os.path.join(folder, os.path.join(folder, "pakInfo.json")), "r") as f:
-		pakInfo = json.load(f)
-	for file in pakInfo["files"]:
-		xmlName = file["name"].replace(".yax", ".xml")
-		xmlFilePath = os.path.join(folder, xmlName)
-		if not os.path.isfile(xmlFilePath):
+	for file in findAllPakXmlFiles(folder):
+		xmlName = os.path.basename(file)
+		if not os.path.isfile(file):
 			printWarning(f"{xmlName} is missing")
 			continue
 
 		currentFile = xmlName
-		xmlDoc = ET.parse(xmlFilePath).getroot()
+		xmlDoc = ET.parse(file).getroot()
 		xmlDocs.append((xmlName, xmlDoc))
 
 		collectIds(xmlDoc, allIds)
@@ -47,6 +49,26 @@ def checkWarningsOfPakFolder(folder: str) -> None:
 		verifyIdUsages(xmlDoc, allIds)
 		verifySizes(xmlDoc)
 		verifyHashes(xmlDoc)
+
+def findAllPakXmlFiles(folder: str) -> List[str]:
+	# find all pakInfo.json and find their xml files
+	pakInfos: List[str] = []
+	xmlFiles: List[str] = []
+	for root, dirs, filenames in os.walk(folder):
+		for filename in filenames:
+			if filename != "pakInfo.json":
+				continue
+			pakInfos.append(os.path.join(root, filename))
+
+	for pakInfoPath in pakInfos:
+		with open(pakInfoPath, "r") as f:
+			pakInfo = json.load(f)
+		for file in pakInfo["files"]:
+			xmlName = file["name"].replace(".yax", ".xml")
+			pakInfoFolder = os.path.dirname(pakInfoPath)
+			xmlFiles.append(os.path.join(pakInfoFolder, xmlName))
+			
+	return xmlFiles
 
 # CHECKS
 
